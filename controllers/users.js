@@ -5,7 +5,7 @@ const BadRequest = require('../errors/BadRequestError');
 const Conflict = require('../errors/ConflictError');
 const NotFound = require('../errors/NotFoundError');
 
-const { NODE_ENV, JWT_SECRET } = process.env;
+const SECRET = process.env.NODE_ENV === 'production' ? process.env.JWT_SECRET : 'dev';
 
 module.exports.getUser = (req, res, next) => {
   userSchema.findById(req.user._id)
@@ -90,7 +90,7 @@ module.exports.createUser = (req, res, next) => {
     })
     .catch(next);
 };
-
+/*
 module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
   userSchema.findUserByCredentials(email, password)
@@ -111,7 +111,15 @@ module.exports.login = (req, res, next) => {
     })
     .catch(next);
 };
+*/
 
-module.exports.signout = (req, res) => {
-  res.clearCookie('jwt').send({ message: 'Выход' });
+module.exports.login = (req, res, next) => {
+  const { email, password } = req.body;
+
+  userSchema.findUserByCredentials(email, password)
+    .then((user) => {
+      const token = jwt.sign({ _id: user._id }, SECRET, { expiresIn: '7d' });
+      res.send({ token });
+    })
+    .catch((err) => next(err));
 };

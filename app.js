@@ -1,18 +1,20 @@
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
-const cors = require('cors');
 const { errors } = require('celebrate');
 const cookieParser = require('cookie-parser');
+const cors = require('./middlewares/cors');
 const router = require('./routes/index');
 const auth = require('./middlewares/auth');
 const { createUserValidation, loginValidation } = require('./middlewares/validation');
-const { createUser, login, signout } = require('./controllers/users');
+const { createUser, login } = require('./controllers/users');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 
 const app = express();
-app.use(cors({ origin: 'https://movies.annatin.nomoredomainsicu.ru', credentials: true }));
-const { PORT = 3000 } = process.env;
+
+app.use(cors);
+
+const { PORT = 4000 } = process.env;
 
 mongoose.connect('mongodb://127.0.0.1:27017/bitfilmsdb');
 
@@ -26,7 +28,6 @@ app.get('/crash-test', () => {
 });
 app.post('/signup', createUserValidation, createUser);
 app.post('/signin', loginValidation, login);
-app.post('/signout', signout);
 app.use(auth);
 app.use(router);
 app.use(errorLogger);
